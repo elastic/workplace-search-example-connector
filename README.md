@@ -1,8 +1,6 @@
 # Workplace Search Example Connector
 
-> :warning: This connector is a tool to illustrate best-practices for building custom connectors
-> for Workplace Search. It has not been tested at scale and has some notable feature gaps (detailed below).
-> Nevertheless, it serves as an excellent template on which to base your own connector.
+> ⛔ !!!DEPRECATED!!! This repo has now been migrated to https://github.com/elastic/ws-gitlab-connector
 
 This code is a connector built to show best practices for indexing data into [Workplace Search](https://www.elastic.co/workplace-search/).
 It indexes GitLab data to illustrate the concepts involved in building a connector.
