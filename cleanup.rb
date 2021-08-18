@@ -18,6 +18,18 @@
 require 'slop'
 require_relative 'lib/git_lab_indexer'
 
+# cleanup(options) -> count
+#
+# Deletes documents last modified in a time window that no longer exist in GitLab.
+#
+# @param [Hash] options The options for the cleanup.
+# @option options [String] :gitlab_host The base URL of the GitLab server.
+# @option options [String] :gitlab_token The authentication token to communicate with the GitLab server.
+# @option options [String] :host The base URL of the WorkplaceSearch server.
+# @option options [String] :access_token The authentication token to communicate with the Workplace Search server.
+# @option options [String] :content_source_id The ID of the content source from which documents will be cleaned up.
+# @option options [String] :from The ISO-8601 date time from which documents should be cleaned up.
+# @option options [String] :to The ISO-8601 date time to which documents should be cleaned up.
 def cleanup(options)
   indexer = GitLabIndexer.new(
     gitlab_host: options[:gitlab_host],

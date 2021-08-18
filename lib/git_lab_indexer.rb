@@ -42,6 +42,16 @@ class GitLabIndexer
     @content_source = ContentSource.new(id: content_source_id)
   end
 
+  # index(from:, to:) -> Number
+  #
+  # Indexes documents that have been modified within the time window.
+  # This document will query GitLab for all documents modified within the time window.
+  # Each matching document will be transformed appropriately for GitLab and indexed into
+  # Workplace Search.
+  #
+  # @param [Time] from The start of the time window.
+  # @param [Time] to The end of the time window.
+  # @return [Number] The number of documents indexed.
   def index(from:, to:)
     document_count = 0
 
@@ -54,6 +64,15 @@ class GitLabIndexer
     document_count
   end
 
+  # cleanup(from:, to:) -> Number
+  #
+  # Deletes from WorkplaceSearch any documents that no longer exist in GitLab for a given time window.
+  # All documents that were last indexed within the time window will be checked for existence in GitLab.
+  # If they are no longer present they will be removed from WorkplaceSearch.
+  #
+  # @param [Time] from The start of the time window.
+  # @param [Time] to The end of the time window.
+  # @return [Number] The number of documents cleaned up.
   def cleanup(from:, to:)
     documents = @content_source.documents_modified_between(client: @workplace_search_client, from: from, to: to)
 
@@ -71,6 +90,13 @@ class GitLabIndexer
 
   private
 
+  # exists_in_gitlab?(type, document) -> Boolean
+  #
+  # Determines if a document of a given type is still present in GitLab.
+  #
+  # @param [String] type The type of the document
+  # @param [Hash] document The document whose existence is being determined
+  # @return [Boolean] True if the document exists in GitLab, false if not.
   def exists_in_gitlab?(type, document)
     begin
       case type
@@ -91,19 +117,25 @@ class GitLabIndexer
     end
   end
 
-  def index_documents(results)
+  # index_documents(documents) -> Number
+  #
+  # Inserts the given documents into Workplace Search.
+  #
+  # @param [Array<Hash>] documents The documents to insert into WorkplaceSearch.
+  # @return [Number] The number of documents written.
+  def index_documents(documents)
     count = 0
 
     loop do
       count += @content_source.index(
         client: @workplace_search_client,
-        documents: results.map do |next_result|
+        documents: documents.map do |next_result|
           yield(next_result)
         end
       )
 
-      if results.has_next_page?
-        results.next_page
+      if documents.has_next_page?
+        documents.next_page
       else
         break
       end

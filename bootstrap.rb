@@ -19,6 +19,15 @@ require 'io/console'
 require 'slop'
 require_relative 'lib/content_source'
 
+# bootstrap(options) -> count
+#
+# Creates a new ContentSource in WorkplaceSearch ready for indexing.
+#
+# @param [Hash] options The options for the bootstrap.
+# @option options [String] :host The base URL of the WorkplaceSearch server.
+# @option options [String] :username The username to authenticate with Workplace Search.
+# @option options [String] :password The password to authenticate with Workplace Search.
+# @option options [String] :name The name of the Content Source.
 def bootstrap(options)
   password = options[:password] || STDIN.getpass("Password: ")
   ContentSource.create(

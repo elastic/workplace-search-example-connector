@@ -18,6 +18,18 @@
 require 'slop'
 require_relative 'lib/git_lab_indexer'
 
+# index(options) -> count
+#
+# Indexes documents that have been modified within a time window.
+#
+# @param [Hash] options The options for the indexing.
+# @option options [String] :gitlab_host The base URL of the GitLab server.
+# @option options [String] :gitlab_token The authentication token to communicate with the GitLab server.
+# @option options [String] :host The base URL of the WorkplaceSearch server.
+# @option options [String] :access_token The authentication token to communicate with the Workplace Search server.
+# @option options [String] :content_source_id The ID of the content source into which documents will be indexed.
+# @option options [String] :from The ISO-8601 date time from which documents should be indexed.
+# @option options [String] :to The ISO-8601 date time to which documents should be indexed.
 def index(options)
   indexer = GitLabIndexer.new(
     gitlab_host: options[:gitlab_host],

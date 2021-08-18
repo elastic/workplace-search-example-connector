@@ -25,6 +25,15 @@ class ContentSource
     @id = id
   end
 
+  # create(host:, username:, password:, name:) -> ContentSource
+  #
+  # Creates a new ContentSource in WorkplaceSearch with a schema suitable for GitLab.
+  #
+  # @param [String] host The base URL of WorkplaceSearch.
+  # @param [String] username The username for the user that will create the ContentSource.
+  # @param [String] password The password of the user.
+  # @param [String] name The name of the ContentSource.
+  # @return [ContentSource] The ContentSource that can be used for indexing operations.
   def self.create(host:, username:, password:, name:)
     response = HTTP.basic_auth(:user => username, :pass => password)
       .post(
@@ -61,6 +70,13 @@ class ContentSource
     ContentSource.new(id: json['id'])
   end
 
+  # deindex(client:, ids:) -> Number
+  #
+  # Deletes the documents with the given IDs from WorkplaceSearch.
+  #
+  # @param [WorkplaceSearchClient] client The client for calling WorkplaceSearch.
+  # @param [Array<String>] ids The ids of the documents to delete
+  # @return [Number] The number of documents deleted.
   def deindex(client:, ids:)
     ids.each_slice(batch_size).each do |next_batch|
       response = client.post("/api/ws/v1/sources/#{id}/documents/bulk_destroy", next_batch)
@@ -71,6 +87,15 @@ class ContentSource
     ids.size
   end
 
+  # documents_modified_between(client:, from:, to:) -> Array<Hash>
+  #
+  # Returns the documents present in WorkplaceSearch that were last modified within
+  # the given time window
+  #
+  # @param [WorkplaceSearchClient] client The client for calling WorkplaceSearch.
+  # @param [Time] from The start of the time window.
+  # @param [Time] to The end of the time window.
+  # @return [Array<Hash>] The documents modified within the time window.
   def documents_modified_between(client:, from:, to:)
     response = client.search(
       {
@@ -107,6 +132,13 @@ class ContentSource
     end
   end
 
+  # index(client:, documents:) -> Number
+  #
+  # Indexes the given documents into WorkplaceSearch.
+  #
+  # @param [WorkplaceSearchClient] client The client for calling WorkplaceSearch.
+  # @param [Array<Hash>] documents The documents to write.
+  # @return [Number] The number of documents written.
   def index(client:, documents:)
     documents.each_slice(batch_size).each do |next_batch|
       response = client.post("/api/ws/v1/sources/#{id}/documents/bulk_create", next_batch)
