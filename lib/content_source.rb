@@ -78,7 +78,9 @@ class ContentSource
   # @param [Array<String>] ids The ids of the documents to delete
   # @return [Number] The number of documents deleted.
   def deindex(client:, ids:)
+    # Split the documents into batches of 100
     ids.each_slice(batch_size).each do |next_batch|
+      # Delete the next batch from Workplace Search
       response = client.post("/api/ws/v1/sources/#{id}/documents/bulk_destroy", next_batch)
 
       raise "Failed to delete batch of #{ids.size} documents because #{response.status}: #{response.body}" unless response.status.ok?
@@ -97,26 +99,25 @@ class ContentSource
   # @param [Time] to The end of the time window.
   # @return [Array<Hash>] The documents modified within the time window.
   def documents_modified_between(client:, from:, to:)
+    # Use the Search API in Workplace Search to query for documents modified in the time window.
     response = client.search(
-      {
-        filters: {
-          all: [
-            {
-              content_source_id: id
-            },
-            {
-              last_activity_at: {
-                from: from.iso8601,
-                to: to.iso8601
-              }
+      filters: {
+        all: [
+          {
+            content_source_id: id
+          },
+          {
+            last_activity_at: {
+              from: from.iso8601,
+              to: to.iso8601
             }
-          ]
-        },
-        result_fields: {
-          gitlab_id: { raw: {} },
-          project_id: { raw: {} },
-          type: { raw: {} }
-        }
+          }
+        ]
+      },
+      result_fields: {
+        gitlab_id: { raw: {} },
+        project_id: { raw: {} },
+        type: { raw: {} }
       }
     )
 
@@ -140,7 +141,9 @@ class ContentSource
   # @param [Array<Hash>] documents The documents to write.
   # @return [Number] The number of documents written.
   def index(client:, documents:)
+    # Split the documents into batches of 100
     documents.each_slice(batch_size).each do |next_batch|
+      # And then write each batch to Workplace Search
       response = client.post("/api/ws/v1/sources/#{id}/documents/bulk_create", next_batch)
 
       raise "Failed to index batch of #{documents.size} documents because #{response.status}: #{response.body}" unless response.status.ok?

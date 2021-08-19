@@ -55,7 +55,9 @@ class GitLabIndexer
   def index(from:, to:)
     document_count = 0
 
+    # Fetch the projects modified inside the time window
     projects = Gitlab.projects(last_activity_after: from.iso8601, last_activity_before: to.iso8601, membership: true).auto_paginate
+    # Then index them, along with their readmes, issues, and merge requests.
     document_count += index_projects(projects)
     document_count += index_readmes(projects)
     document_count += index_issues(projects, from, to)
@@ -74,14 +76,17 @@ class GitLabIndexer
   # @param [Time] to The end of the time window.
   # @return [Number] The number of documents cleaned up.
   def cleanup(from:, to:)
+    # Query for all documents that were indexed into Workplace Search within the time window
     documents = @content_source.documents_modified_between(client: @workplace_search_client, from: from, to: to)
 
+    # Then check which documents still exist in GitLab
     to_delete = documents.group_by {|document| document[:type]}.map do |type, documents_of_type|
       documents_of_type.select do |next_document|
         !exists_in_gitlab?(type, next_document)
       end
     end.flatten
 
+    # And delete the ones that do not
     @content_source.deindex(
       client: @workplace_search_client,
       ids: to_delete.map {|next_document| next_document[:id]}

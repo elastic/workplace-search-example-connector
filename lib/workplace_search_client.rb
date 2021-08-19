@@ -50,6 +50,8 @@ class WorkplaceSearchClient
   private
 
   def with_auth(access_token = @access_token)
+    # Authentication in Workplace Search is done using a Bearer token
+    # acquired from an OAuth flow.
     HTTP.auth("Bearer #{access_token}")
   end
 end
